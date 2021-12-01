@@ -1,12 +1,10 @@
-import sys
 import json
-import zipfile
 import os
 import psutil
-import pandas as pd
-import numpy as np
 from zipfile import ZipFile
 import datetime
+import xml.etree.ElementTree as xml
+
 
 def disk_info():
     for part in psutil.disk_partitions(all=False):
@@ -22,7 +20,7 @@ def disk_info():
 
 def file_moves():
     file_name = "test.txt"
-    s = input()
+    s = input("Введите текст для ввода в файл\n")
     with open(file_name, "w") as f:
         f.write(s)
     with open(file_name, "r") as f:
@@ -32,13 +30,12 @@ def file_moves():
     except Exception as ex:
         print(str(ex))
     else:
-        print("success!")
+        print("Файл удален!")
 def json_moves():
     file_name = "test.json"
     d = {
-        "a": 1,
-        "b": [1],
-        "c": "1"
+        "имя": "Иван",
+        "возраст": 20
     }
 
     with open(file_name, "w") as f:
@@ -50,33 +47,39 @@ def json_moves():
     except Exception as ex:
             print(str(ex))
     else:
-        print("success!")
+        print("JSON удален!")
 
 def xml_moves():
     file_name = "test.xml"
-    df = pd.DataFrame(np.random.randn(4, 3), columns=["a", "b", "c"])
-    print(df)
+    root = xml.Element("qwerty")
+    d = {
+        "name": "Ivan",
+        "age": 20
+    }
+    userElem = xml.SubElement(root, "zxc")
+    xml.SubElement(userElem, "name", name=d["name"])
+    xml.SubElement(userElem, "Age").text = str(d["age"])
+    tree = xml.ElementTree(root)
+    tree.write("%s" % file_name)
 
-    df.to_xml(file_name, index=None)
-    df = pd.read_xml(file_name)
-
-    row = []
-    for col in df.columns:
-        row.append(input(col))
-
-    df = df.append(pd.DataFrame([row], columns=df.columns, index=[df.index.stop]), ignore_index=False)
-    df.to_xml(file_name, index=None)
-    print(df)
+    with open("%s" % (file_name), "r") as xml_file:
+        tree = xml.fromstring(xml_file.read())
+        for el in tree.findall('zxc'):
+            for ch in list(el):
+                if ch.attrib is not None and ch.attrib.get("name") is not None:
+                    print("%s %s" % (ch.tag, ch.attrib.get("name")))
+                if ch.text is not None:
+                    print("%s %s" % (ch.tag, ch.text))
 
     try:
         os.remove(file_name)
     except Exception as ex:
         print(str(ex))
     else:
-        print("success!")
+        print("XML удален!")
 
 def zip_moves():
-    file_name = "files.zip"
+    file_name = "arch.zip"
     file_paths = ["1.txt", "2.txt", "3.txt"]
 
     for file in file_paths:
@@ -95,9 +98,11 @@ def zip_moves():
             print('\tZIP version:\t' + str(info.create_version))
             print('\tCompressed:\t' + str(info.compress_size) + ' bytes')
             print('\tUncompressed:\t' + str(info.file_size) + ' bytes')
+
+
 if __name__ == '__main__':
     # disk_info()
     # file_moves()
     # json_moves()
-    # xml_moves()
-    zip_moves()
+    xml_moves()
+    # zip_moves()
